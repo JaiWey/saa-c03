@@ -296,6 +296,7 @@ function renderHome(app){
   const pos=Math.min(S.pos||0,total-1);
   const modes=[
     ['Continue in order',`Resume at question ${pos+1} (#${BANK[pos].n})`,null,()=>startSession('seq',BANK.map(q=>q.n),{i:pos})],
+    ['Reverse order',S.rn?`Resume at #${S.rn} and count down`:`Start at #${BANK[total-1].n} and count down to #${BANK[0].n}`,null,()=>{const l=BANK.map(q=>q.n).reverse();const i=S.rn?Math.max(0,l.indexOf(S.rn)):0;startSession('rev',l,{i});}],
     ['Random practice','Shuffle the whole bank',null,()=>startSession('rand',shuffle(BANK.map(q=>q.n)))],
     ['Random · unseen only','Cover questions you have not tried',unseenList().length,()=>startSession('unseen',shuffle(unseenList()))],
     ['Review list','Questions you last got wrong; removed once answered correctly',wrong,()=>startSession('wrong',shuffle(wrongList()))],
@@ -352,8 +353,9 @@ function renderQuiz(app){
   const reveal=!!sub && !Q.exam;
   const sel=new Set(Q.answers[n]||[]);
   if(Q.kind==='seq'){S.pos=BANK.findIndex(x=>x.n===n);save();}
+  if(Q.kind==='rev'){S.rn=n;save();}
 
-  const labelMap={seq:'In order',rand:'Random',unseen:'Unseen',wrong:'Review list',fav:'Favorites',search:'Search results',exam:'Mock exam'};
+  const labelMap={seq:'In order',rev:'Reverse order',rand:'Random',unseen:'Unseen',wrong:'Review list',fav:'Favorites',search:'Search results',exam:'Mock exam'};
   $('#topExtra').append(Q.exam?h('span',{class:'timer',id:'timer'},fmtTime((Q.deadline-Date.now())/1000)):h('span',{class:'chip'},labelMap[Q.kind]));
 
   const head=h('div',{class:'qhead'},
