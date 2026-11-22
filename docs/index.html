@@ -297,6 +297,7 @@ function renderHome(app){
   const pos=Math.min(S.pos||0,total-1);
   const modes=[
     ['Continue in order',`Resume at question ${pos+1} (#${BANK[pos].n})`,null,()=>startSession('seq',BANK.map(q=>q.n),{i:pos})],
+    ['Browse with answers',S.bn?`Resume at #${S.bn} · answers and explanations always shown`:'Read through the bank with answers and explanations shown; nothing is graded',null,()=>{const l=BANK.map(q=>q.n);startSession('browse',l,{i:S.bn?Math.max(0,l.indexOf(S.bn)):0});}],
     ['Reverse order',S.rn?`Resume at #${S.rn} and count down`:`Start at #${BANK[total-1].n} and count down to #${BANK[0].n}`,null,()=>{const l=BANK.map(q=>q.n).reverse();const i=S.rn?Math.max(0,l.indexOf(S.rn)):0;startSession('rev',l,{i});}],
     ['Random practice','Shuffle the whole bank',null,()=>startSession('rand',shuffle(BANK.map(q=>q.n)))],
     ['Random · unseen only','Cover questions you have not tried',unseenList().length,()=>startSession('unseen',shuffle(unseenList()))],
@@ -351,12 +352,14 @@ function renderQuiz(app){
   const n=Q.list[Q.i], q=BY.get(n);
   const ans=effAns(q), multi=ans.length>1;
   const sub=Q.submitted[n];            // {ok, sel}
-  const reveal=!!sub && !Q.exam;
-  const sel=new Set(Q.answers[n]||[]);
+  const browse=Q.kind==='browse';
+  const reveal=browse||(!!sub && !Q.exam);
+  const sel=browse?new Set(ans.split('')):new Set(Q.answers[n]||[]);
   if(Q.kind==='seq'){S.pos=BANK.findIndex(x=>x.n===n);save();}
   if(Q.kind==='rev'){S.rn=n;save();}
+  if(browse){S.bn=n;save();}
 
-  const labelMap={seq:'In order',rev:'Reverse order',rand:'Random',unseen:'Unseen',wrong:'Review list',fav:'Favorites',search:'Search results',exam:'Mock exam'};
+  const labelMap={browse:'Browse',seq:'In order',rev:'Reverse order',rand:'Random',unseen:'Unseen',wrong:'Review list',fav:'Favorites',search:'Search results',exam:'Mock exam'};
   $('#topExtra').append(Q.exam?h('span',{class:'timer',id:'timer'},fmtTime((Q.deadline-Date.now())/1000)):h('span',{class:'chip'},labelMap[Q.kind]));
 
   const head=h('div',{class:'qhead'},
@@ -387,7 +390,7 @@ function renderQuiz(app){
   box.append(opts);
 
   const actions=h('div',{class:'actions'});
-  if(!Q.exam && !sub){
+  if(!Q.exam && !sub && !browse){
     const need=ans.length;
     if(multi||!S.set.autoSubmit) actions.append(h('button',{class:'btn primary lg',id:'btnSubmit',disabled:sel.size===0,onclick:submit},'Submit answer'));
     if(multi) actions.append(h('span',{class:'sub'},`Selected ${sel.size} / ${need}`));
@@ -396,12 +399,12 @@ function renderQuiz(app){
   box.append(actions);
 
   if(reveal){
-    const ok=sub.ok;
+    const ok=browse||sub.ok;
     const v=h('div',{class:'verdict '+(ok?'ok':'bad')},
-      h('b',{class:'t'},ok?'✓ Correct':(sub.peek?'Answer revealed':'✗ Incorrect')),
+      h('b',{class:'t'},browse?'Answer':(ok?'✓ Correct':(sub.peek?'Answer revealed':'✗ Incorrect'))),
       h('div',{class:'ans'},
         h('span',{},h('em',{},'Correct answer'),h('span',{class:'kv'},ans.split('').join(' '))),
-        h('span',{},h('em',{},'Your answer'),h('span',{class:'kv'},sub.sel.length?[...sub.sel].sort().join(' '):'—'))));
+        browse?null:h('span',{},h('em',{},'Your answer'),h('span',{class:'kv'},sub.sel.length?[...sub.sel].sort().join(' '):'—'))));
     v.append(h('div',{class:'expl'},h('b',{},'Explanation'),h('p',{},q.e||'')));
     if(q.x){const ul=h('div',{class:'ox'});q.o.forEach((_,i)=>{const L='ABCDEFGH'[i];if(!q.x[L])return;const good=ans.includes(L);ul.append(h('div',{class:'oxi '+(good?'g':'b')},h('span',{class:'oxl'},L),h('span',{class:'oxt'},h('b',{},good?'Correct. ':'Incorrect. '),q.x[L])));});v.append(h('div',{class:'expl'},h('b',{},'Each option'),ul));}
     if(S.set.ref&&(q.pa||q.v)) v.append(h('div',{class:'ref'},'Reference: '+(q.pa?'source PDF key '+q.pa.split('').join(' '):'')+(q.pa&&q.v?' · ':'')+(q.v?'community vote '+q.v:'')));
@@ -428,7 +431,7 @@ function go(d){const j=Q.i+d;if(j<0||j>=Q.list.length)return;Q.i=j;render();}
 
 function pick(L){
   const n=Q.list[Q.i], q=BY.get(n);
-  if(Q.submitted[n]&&!Q.exam) return;
+  if(Q.kind==='browse'||(Q.submitted[n]&&!Q.exam)) return;
   const multi=effAns(q).length>1;
   let cur=new Set(Q.answers[n]||[]);
   if(multi){ cur.has(L)?cur.delete(L):cur.add(L); }
