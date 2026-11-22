@@ -1,0 +1,230 @@
+[
+{
+"n": 126,
+"x": {
+"A": "Moving everything to Deep Archive immediately would make the most recent 2 years of data slow to retrieve, which breaks the requirement.",
+"B": "Keeping data in S3 Standard for the first 2 years keeps it highly available and immediately retrievable. A lifecycle rule then moves it to Glacier Deep Archive for the rest of the 25 years at the lowest cost.",
+"C": "Intelligent-Tiering's archive options take effect only after long periods without access and are not controlled by a data age, so recent data might not stay in an immediately accessible tier.",
+"D": "One Zone-IA is not highly available because it uses a single AZ, and moving to it immediately doesn't satisfy the 2 year high availability requirement."
+}
+},
+{
+"n": 127,
+"x": {
+"A": "EBS gives high I/O and S3 is durable and cheap, but EBS is not the highest-performance option. Instance store has higher I/O, so this is not the best match for maximum I/O.",
+"B": "EFS for 300 TB of media costs much more than S3, and EBS is not the maximum I/O option.",
+"C": "EFS for durable storage is expensive, and S3 for archival data misses the lower-cost Glacier tier.",
+"D": "Instance store provides the highest I/O performance for processing, S3 is very durable for the 300 TB of media, and S3 Glacier is the cheapest option for 900 TB of archive data."
+}
+},
+{
+"n": 128,
+"x": {
+"A": "Spot Instances in an Auto Scaling group are cheap, but you must manage the container hosts and orchestration yourself.",
+"B": "Spot Instances in an EKS managed node group give the lowest compute cost for interruptible stateless workloads, and EKS with managed node groups removes much of the container operations work.",
+"C": "On-Demand Instances cost more than Spot for workloads that can tolerate interruptions, and you manage the container hosts.",
+"D": "On-Demand nodes in EKS cost more than Spot, so cost is not minimized."
+}
+},
+{
+"n": 129,
+"x": {
+"A": "Aurora PostgreSQL is a managed database that handles patching, backups, and scaling, so it removes database operations work.",
+"B": "Running the containers on EC2 instances still means managing and capacity-planning the servers.",
+"C": "CloudFront speeds content delivery but does not remove the infrastructure maintenance and capacity planning burden.",
+"D": "ElastiCache improves read performance, but it does not reduce operational overhead and adds another service.",
+"E": "Fargate with ECS runs the containers with no servers to manage and handles capacity automatically."
+}
+},
+{
+"n": 130,
+"x": {
+"A": "A simple scaling policy reacts to alarms with fixed steps and cooldowns, so it doesn't keep CPU steadily near a target as well.",
+"B": "A target tracking policy automatically adds or removes instances to keep average CPU utilization near the 40% target.",
+"C": "A custom Lambda function to adjust capacity means building and maintaining your own scaling logic.",
+"D": "Scheduled scaling follows a fixed schedule and doesn't respond to actual CPU usage."
+}
+},
+{
+"n": 131,
+"x": {
+"A": "Writing a separate policy for each bucket is manual work and does not by itself identify CloudFront as the allowed reader.",
+"B": "IAM users can't be assigned to CloudFront distributions.",
+"C": "A CloudFront distribution ID is not a valid principal in this form for the legacy approach, and the stated setup does not describe origin access control.",
+"D": "An origin access identity assigned to the distribution, with the bucket permissions granting read only to the OAI, ensures files can be read only through CloudFront and not by direct S3 URL."
+}
+},
+{
+"n": 132,
+"x": {
+"A": "CloudFront caches the reports at edge locations for the fastest response worldwide, and S3 stores them cheaply with no servers to provision.",
+"B": "Lambda and DynamoDB are not suited to serving downloadable report files, and they do not provide global caching.",
+"C": "An ALB with EC2 Auto Scaling requires provisioning and managing servers, which the question wants to avoid.",
+"D": "Route 53 with internal ALBs is not reachable by users on the internet and does not provide global low latency."
+}
+},
+{
+"n": 133,
+"x": {
+"A": "Oracle on EC2 gives OS access, but you manage everything, including replication and DR, so it has high operational overhead.",
+"B": "RDS for Oracle is managed but does not give access to the underlying operating system.",
+"C": "RDS Custom for Oracle gives access to the underlying OS while AWS manages much of the operations. A cross-Region read replica provides disaster recovery.",
+"D": "RDS for Oracle does not allow access to the operating system, and a standby in another AZ doesn't give Region-level DR."
+}
+},
+{
+"n": 134,
+"x": {
+"A": "Loading the data into a new bucket with CRR enabled means all of it, existing and new, gets replicated and encrypted with SSE-KMS multi-Region keys. Athena queries it with SQL and is serverless, so it has the least operational overhead.",
+"B": "RDS is not serverless and would require loading data from S3 into a database, so it is much more work than Athena.",
+"C": "CRR replicates only objects added after replication is enabled, so the data already in the existing bucket would not be copied to the other Region unless it is re-uploaded. It also doesn't need a new bucket as A does.",
+"D": "Existing objects would not be replicated by CRR, and RDS is not serverless and needs the data loaded into a database, which is more overhead than Athena."
+}
+},
+{
+"n": 135,
+"x": {
+"A": "VPC peering makes both VPCs reachable at the network level, so it is not restricted to the target service, and connections could be initiated from the provider side.",
+"B": "A virtual private gateway is for VPN or Direct Connect connections and is not how a provider exposes a service through PrivateLink.",
+"C": "A NAT gateway sends traffic out over the internet, so the connection is not private.",
+"D": "The provider exposes the service through a VPC endpoint service, and the company uses AWS PrivateLink to connect. The connection is private, limited to that service, and initiated only from the company's VPC."
+}
+},
+{
+"n": 136,
+"x": {
+"A": "An ongoing replication task, which uses change data capture, keeps Aurora synchronized with the on-premises database while it remains online.",
+"B": "A backup of the on-premises database is a one-time copy and does not keep the target synchronized.",
+"C": "A DMS replication server (instance) is needed to run the migration and replication tasks.",
+"D": "SCT is used to convert schemas between different database engines. PostgreSQL to Aurora PostgreSQL is a homogeneous migration, so it's not required.",
+"E": "An EventBridge rule can monitor but is not required to perform the migration or keep the databases synchronized."
+}
+},
+{
+"n": 137,
+"x": {
+"A": "Forwarding root user emails to every user in the organization sends sensitive notifications to people who shouldn't see them.",
+"B": "Root email addresses set as distribution lists that go to a few administrators, plus alternate contacts, mean notifications reach the right people and no single mailbox is a single point of failure.",
+"C": "Sending everything to one administrator creates a single point of failure, and they might miss an alert.",
+"D": "Using one root email for all accounts is not allowed, because each account needs a unique email address."
+}
+},
+{
+"n": 138,
+"x": {
+"A": "Amazon MQ for the queue is right, but running PostgreSQL on EC2 Auto Scaling groups is not a valid way to provide a Multi-AZ database, and you would manage it yourself.",
+"B": "Amazon MQ active/standby brokers across AZs, a Multi-AZ Auto Scaling group for the application, and RDS for PostgreSQL Multi-AZ give the highest availability with managed services and the least operational overhead.",
+"C": "Self-hosting RabbitMQ on EC2 Auto Scaling groups still requires managing the broker and clustering, which is more work than Amazon MQ.",
+"D": "Hosting RabbitMQ and PostgreSQL on EC2 in Auto Scaling groups doesn't keep state or data consistent across instances and has the highest operational overhead."
+}
+},
+{
+"n": 139,
+"x": {
+"A": "A Lambda function copying files requires writing and maintaining code, and S3 event notifications can't send to SageMaker Pipelines as a destination.",
+"B": "A Lambda copy function again means custom code, which is more overhead than using replication.",
+"C": "S3 replication copies files automatically, but S3 event notifications can't target SageMaker Pipelines directly.",
+"D": "S3 replication copies files to the analysis bucket automatically. EventBridge can then send ObjectCreated events to both Lambda and SageMaker Pipelines, with no custom copying code."
+}
+},
+{
+"n": 140,
+"x": {
+"A": "Ingestion workloads are sporadic and can be interrupted, so Spot Instances give the largest savings.",
+"B": "On-Demand costs more than Spot for interruptible, sporadic work.",
+"C": "A Compute Savings Plan covers Fargate and Lambda as well as EC2, so it can discount the predictable front end and API layer.",
+"D": "Reserved Instances commit to steady usage, but the ingestion usage is sporadic and unpredictable, so you would pay for unused capacity.",
+"E": "An EC2 Instance Savings Plan applies only to EC2, so it doesn't cover Fargate or Lambda."
+}
+},
+{
+"n": 141,
+"x": {
+"A": "CloudFront with the ALB as the origin caches static content at the edge and speeds up dynamic content over the AWS backbone, so all users get low latency from one stack.",
+"B": "Two Regions with latency routing help, but dynamic content still travels over the internet and static content isn't cached at edge locations. It is also more complex.",
+"C": "CloudFront for static content only leaves dynamic content traveling over the public internet directly to the ALB, so latency is higher.",
+"D": "Geolocation routing chooses by user location rather than lowest latency, and there is no edge caching or acceleration."
+}
+},
+{
+"n": 142,
+"x": {
+"A": "Route 53 to an ALB doesn't handle UDP, and Lambda doesn't fit a modified Linux kernel application. It also lacks static IPs and edge entry.",
+"B": "CloudFront supports HTTP and HTTPS only, so it can't carry UDP, and Lambda can't run a modified Linux kernel.",
+"C": "Global Accelerator provides static anycast IP addresses and routes users to the nearest edge location, and it supports UDP to an NLB. EC2 instances in an Auto Scaling group run the modified-kernel application.",
+"D": "API Gateway is for HTTP/WebSocket APIs and an ALB doesn't support UDP, so it can't carry the traffic."
+}
+},
+{
+"n": 143,
+"x": {
+"A": "Hosting the application on Lambda would need a major rewrite of the code, which the company wants to avoid.",
+"B": "Amplify with API Gateway and Lambda also requires rewriting the backend, so the code isn't retained.",
+"C": "EC2 with an Auto Scaling group is scalable but needs more operational overhead, and it doesn't separate the application into smaller independently managed services as easily.",
+"D": "ECS lets the team run the code in containers with most of it unchanged, split into smaller services managed by different teams behind an ALB, with little operational overhead."
+}
+},
+{
+"n": 144,
+"x": {
+"A": "Moving to Redshift requires loading data and running another system, which costs more and takes more effort.",
+"B": "An Aurora Replica takes read-only report queries off the primary, so ReadIOPS and CPU spikes no longer slow the application. It is a cost-effective fix.",
+"C": "A larger instance class costs more all the time to cover a spike that happens once a month.",
+"D": "Aurora storage isn't provisioned with IOPS in the same way, and more IOPS would not fix CPU spikes."
+}
+},
+{
+"n": 145,
+"x": {
+"A": "RDS and two On-Demand instances behind an ALB helps, but it's a fixed number of instances, so it doesn't scale seamlessly and costs more than Spot-based scaling.",
+"B": "Route 53 weighted routing does not check instance health or load, and two fixed instances don't scale seamlessly.",
+"C": "Stopping the instance to change the size causes downtime and does not scale out seamlessly.",
+"D": "Aurora MySQL takes the database off the instance, and an Auto Scaling group with a launch template and an ALB scales seamlessly. Spot capacity makes it the most cost-effective."
+}
+},
+{
+"n": 146,
+"x": {
+"A": "Spot Instances can be interrupted, which would affect availability if used for the entire workload.",
+"B": "Reserved Instances give a discount for the steady baseline, and Spot Instances cheaply cover the extra capacity at peak. This cuts cost without hurting availability for the baseline.",
+"C": "On-Demand for the baseline costs more than Reserved Instances for steady usage.",
+"D": "Dedicated Instances are the most expensive option and bring no benefit here."
+}
+},
+{
+"n": 147,
+"x": {
+"A": "AWS Backup is for backing up resources. It doesn't move S3 objects between storage classes, so a lifecycle policy is the right tool.",
+"B": "Logs stay in S3 Standard for the first month, when they are accessed regularly, and an S3 Lifecycle policy moves older logs to Glacier Deep Archive, the lowest-cost storage for 10 year retention.",
+"C": "CloudWatch Logs storage is much more expensive for 10 TB per month, and AWS Backup doesn't move CloudWatch logs to Glacier.",
+"D": "S3 Lifecycle policies apply to S3 buckets, not to CloudWatch Logs, and CloudWatch Logs storage is costly."
+}
+},
+{
+"n": 148,
+"x": {
+"A": "Lambda already runs across multiple AZs, and this does not recover from failed invocations.",
+"B": "More CPU and memory won't fix transient network connectivity issues.",
+"C": "Changing the SNS retry strategy is limited and doesn't guarantee eventual processing, because after the retries are exhausted the message is lost.",
+"D": "An SQS queue set as the on-failure destination keeps failed notifications durable, and the function can process them from the queue later. This ensures all notifications are eventually processed."
+}
+},
+{
+"n": 149,
+"x": {
+"A": "An SQS FIFO queue preserves the order of messages, and Lambda can process them with no servers to manage.",
+"B": "SNS does not guarantee message order for standard topics, and it doesn't hold messages for processing.",
+"C": "A standard queue offers only best-effort ordering, so the order might not be maintained.",
+"D": "SNS with a standard SQS queue still doesn't guarantee order, and adds an unnecessary service."
+}
+},
+{
+"n": 150,
+"x": {
+"A": "A CloudWatch composite alarm combines multiple alarms with AND/OR logic, so it triggers only when CPU is above 50% and read IOPS are high at the same time. This acts quickly and cuts false alarms.",
+"B": "Dashboards display metrics but don't trigger actions, so someone would have to watch them.",
+"C": "Synthetics canaries monitor endpoints and application behavior, not infrastructure metrics like CPU and disk IOPS.",
+"D": "A single metric alarm evaluates only one metric, so it can't require two conditions at the same time."
+}
+}
+]
