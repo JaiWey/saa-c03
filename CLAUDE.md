@@ -19,7 +19,7 @@ Run from repo root: `PYTHONUTF8=1 python build_en.py` to rebuild English output 
 
 ## Template architecture
 
-`template*.html` is a single-file vanilla-JS SPA (no framework; DOM built with a small `h()` helper). State is persisted in `localStorage` under `saa-c03-practice-en-v1` (progress `prog`, favorites `fav`, settings `set`, importable/exportable as JSON). Modes: sequential practice, search/jump to question, favorites, wrong-answer review, and a timed exam with answer sheet. Questions with `a.length > 1` are multi-select. A `mismatch` flag shows when the app's answer differs from the PDF key (`pa`).
+`template*.html` is a single-file vanilla-JS SPA (no framework; DOM built with a small `h()` helper). State is persisted in `localStorage` under `saa-c03-practice-en-v1` (progress `prog`, favorites `fav`, settings `set`, importable/exportable as JSON). Modes (all started via `startSession(kind,list,opts)`): sequential (`seq`), reverse order (`rev`, resume pointer `S.rn`), browse (`browse`, resume pointer `S.bn`; answers and explanations always shown, nothing graded or recorded, options not clickable), random, unseen, wrong-answer review, favorites, search/jump to question, and a timed exam with answer sheet. Pages are served from `docs/index.html` (a copy of `dist_en/index.html`, GitHub Pages from main `/docs`) — after changing the template, rebuild and `cp dist_en/index.html docs/index.html`. Questions with `a.length > 1` are multi-select. A `mismatch` flag shows when the app's answer differs from the PDF key (`pa`).
 
 ## Testing
 

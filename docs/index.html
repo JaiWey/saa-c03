@@ -60,6 +60,7 @@ h2{font-size:17px;margin:26px 0 10px}
 .results{margin-top:10px;display:flex;flex-direction:column;gap:6px}
 .res{padding:10px 14px;text-align:left;display:flex;gap:10px;font-size:14px}
 .res .no{color:var(--accent);font-weight:700;min-width:46px}
+.res mark{background:color-mix(in srgb,var(--accent) 30%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .res .t{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .note{margin-top:22px;padding:12px 16px;border-radius:12px;background:var(--warn-bg);color:var(--ink);font-size:14px;border:1px solid color-mix(in srgb,var(--warn) 35%,transparent)}
 
@@ -312,17 +313,27 @@ function renderHome(app){
   app.append(h('h2',{},'Start practicing'),grid);
 
   app.append(h('h2',{},'Find by number or keyword'));
-  const inp=h('input',{type:'search',placeholder:'Enter a number (e.g. 305) or keyword (e.g. Transfer Acceleration)'});
+  const inp=h('input',{type:'search',placeholder:'Question number (e.g. 305) or keywords in the question or options (e.g. Transfer Acceleration)'});
   const res=h('div',{class:'results'});
+  const esc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const hl=(t,kws)=>{const re=new RegExp('('+kws.map(esc).join('|')+')','gi');return t.split(re).map((p,i)=>i%2?h('mark',{},p):p);};
+  const LIMIT=100;
   const doSearch=()=>{
     res.replaceChildren(); const v=inp.value.trim(); if(!v)return;
-    let hits=[];
+    let hits=[],kws=[];
     if(/^#?\d+$/.test(v)){ const q=BY.get(+v.replace('#','')); if(q)hits=[q]; }
-    else { const kw=v.toLowerCase().split(/\s+/); hits=BANK.filter(q=>{const t=(q.q+' '+q.o.join(' ')).toLowerCase();return kw.every(k=>t.includes(k));}); }
+    else { kws=v.toLowerCase().split(/\s+/).filter(Boolean); hits=BANK.filter(q=>{const t=(q.q+' '+q.o.join(' ')).toLowerCase();return kws.every(k=>t.includes(k));}); }
     if(!hits.length){res.append(h('div',{class:'sub'},'No matching questions'));return;}
-    res.append(h('div',{class:'sub'},`${hits.length} found${hits.length>40?', showing the first 40':''}`));
+    res.append(h('div',{class:'sub'},`${hits.length} found in question text or options${hits.length>LIMIT?`, showing the first ${LIMIT}`:''}`));
     const ids=hits.map(q=>q.n);
-    hits.slice(0,40).forEach(q=>res.append(h('button',{class:'card res',onclick:()=>startSession('search',ids,{i:ids.indexOf(q.n)})},h('span',{class:'no'},'#'+q.n),h('span',{class:'t'},q.q))));
+    hits.slice(0,LIMIT).forEach(q=>{
+      const qt=q.q.length>220&&kws.length?q.q.slice(Math.max(0,Math.min(...kws.map(k=>{const i=q.q.toLowerCase().indexOf(k);return i<0?q.q.length:i;}))-60),undefined):q.q;
+      const matched=kws.length?q.o.map((t,i)=>[LET[i],t||'']).filter(([,t])=>kws.some(k=>t.toLowerCase().includes(k))):[];
+      const body=h('div',{style:'min-width:0;flex:1'},h('div',{class:'t'},...(kws.length?hl(qt.length<q.q.length?'… '+qt:qt,kws):[qt])));
+      matched.slice(0,4).forEach(([L,t])=>body.append(h('div',{style:'font-size:.9em;opacity:.8;margin-top:3px'},L+'. ',...hl(t,kws))));
+      const kids=[h('span',{class:'no'},'#'+q.n),body];
+      res.append(h('button',{class:'card res',onclick:()=>startSession('search',ids,{i:ids.indexOf(q.n)})},kids));
+    });
   };
   inp.addEventListener('input',doSearch);
   app.append(h('div',{class:'search'},inp),res);
